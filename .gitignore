@@ -1,0 +1,14 @@
+# .gitignore
+.env
+__pycache__/
+*.pyc
+*.pkl
+*.db
+mlruns/
+.ipynb_checkpoints
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
