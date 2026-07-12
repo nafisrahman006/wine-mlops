@@ -83,6 +83,13 @@ PostgreSQL  MinIO   MLflow     Model
 | 🚀 **FastAPI** | High-performance prediction API |
 | 🔒 **Secret Management** | Environment variables via `.env` |
 | 🐳 **Docker Compose** | One-command full stack deployment |
+| 📈 **Data Drift Detection** | Z-score monitoring on alcohol & fixed acidity vs. training stats |
+| 🧪 **Batch Prediction** | `POST /predict/batch` for multiple wines in one request |
+| 📉 **Performance Metrics** | `GET /metrics` for prediction counts, accuracy, latency, drift status |
+| ✅ **Input Validation** | Pydantic models enforce realistic chemical ranges |
+| 🔄 **Registry Retry Logic** | API polls MLflow for 2.5 min waiting for the production alias |
+| 📝 **Structured Logging** | Dual file + stdout logging with timestamps |
+| ❤️ **Docker Healthcheck** | Built-in container health check via curl |
 
 ---
 
@@ -130,7 +137,7 @@ This will:
 |---------|-----|-------------|
 | **FastAPI Docs** | http://localhost:8000/docs | - |
 | **MLflow UI** | http://localhost:5001 | - |
-| **MinIO Console** | http://localhost:9001 
+| **MinIO Console** | http://localhost:9001 | 
 
 ---
 
@@ -187,13 +194,14 @@ wine-quality-mlops/
 
 - **Trains 4 models:** RandomForest, GradientBoosting, LogisticRegression, SVM
 - **Logs to:** MLflow + MinIO
-- **Outputs:** `wine_model.pkl` (best model)
+- **Outputs:** Training statistics (logged as MLflow params for drift reference)
 
 ### API (FastAPI)
 
 - **Port:** `8000`
 - **Loads model from:** MLflow Model Registry (`wine-model@production`)
-- **Endpoint:** `POST /predict`
+- **Endpoints:** `GET /`, `GET /metrics`, `POST /predict`, `POST /predict/batch`
+- **Features:** Input validation, drift detection, performance metrics, structured logging
 
 ---
 
@@ -230,7 +238,7 @@ wine-quality-mlops/
 ### Console Access
 
 - **URL:** http://localhost:9001
-- **Login:** userid & Password
+- **Login:** minioadmin / minioadmin123
 
 ### Bucket Structure
 
@@ -273,6 +281,7 @@ model = mlflow.sklearn.load_model("models:/wine-model@production")
 - No hardcoded Run IDs
 - Easy model promotion
 - Rollback support
+- Auto-retry on startup (waits up to 2.5 min for the alias)
 
 ---
 
@@ -286,13 +295,49 @@ curl http://localhost:8000/
 
 **Response:**
 ```json
-{"message": "Wine Quality Prediction API is live"}
+{
+  "message": "Wine Quality Prediction API is live",
+  "model": "wine-model@production",
+  "features": [
+    "monitoring_logging",
+    "performance_metrics",
+    "input_validation",
+    "batch_prediction",
+    "drift_detection"
+  ]
+}
+```
+
+### Get Metrics
+
+```bash
+curl http://localhost:8000/metrics
+```
+
+**Response:**
+```json
+{
+  "total_predictions": 42,
+  "good_quality_count": 30,
+  "bad_quality_count": 12,
+  "good_percentage": 71.43,
+  "avg_prediction_time_ms": 2.15,
+  "drift_status": {
+    "drift_detected": false,
+    "alcohol_drift_score": 0.85,
+    "fixed_acidity_drift_score": 0.32,
+    "recent_alcohol_mean": 10.6,
+    "recent_fixed_acidity_mean": 8.1
+  }
+}
 ```
 
 ### Predict Single Wine
 
 ```bash
-curl -X POST http://localhost:8000/predict   -H "Content-Type: application/json"   -d '{
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
     "fixed_acidity": 7.4,
     "volatile_acidity": 0.7,
     "citric_acid": 0.0,
@@ -303,13 +348,20 @@ curl -X POST http://localhost:8000/predict   -H "Content-Type: application/json"
 
 **Response:**
 ```json
-{"good_quality": false}
+{
+  "good_quality": false,
+  "prediction_time_ms": 1.234,
+  "drift_warning": false,
+  "drift_details": null
+}
 ```
 
 ### Predict Good Quality Wine
 
 ```bash
-curl -X POST http://localhost:8000/predict   -H "Content-Type: application/json"   -d '{
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
     "fixed_acidity": 7.4,
     "volatile_acidity": 0.3,
     "citric_acid": 0.3,
@@ -320,7 +372,49 @@ curl -X POST http://localhost:8000/predict   -H "Content-Type: application/json"
 
 **Response:**
 ```json
-{"good_quality": true}
+{
+  "good_quality": true,
+  "prediction_time_ms": 1.145,
+  "drift_warning": false,
+  "drift_details": null
+}
+```
+
+### Batch Prediction
+
+```bash
+curl -X POST http://localhost:8000/predict/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wines": [
+      {
+        "fixed_acidity": 7.4,
+        "volatile_acidity": 0.7,
+        "citric_acid": 0.0,
+        "residual_sugar": 1.9,
+        "alcohol": 9.4
+      },
+      {
+        "fixed_acidity": 7.4,
+        "volatile_acidity": 0.3,
+        "citric_acid": 0.3,
+        "residual_sugar": 2.0,
+        "alcohol": 12.0
+      }
+    ]
+  }'
+```
+
+**Response:**
+```json
+{
+  "predictions": [
+    {"good_quality": false},
+    {"good_quality": true}
+  ],
+  "total": 2,
+  "time_ms": 2.341
+}
 ```
 
 ---
@@ -361,20 +455,7 @@ curl -X POST http://localhost:8000/predict   -H "Content-Type: application/json"
 
 ![FastAPI Docs](screenshots/fastapi.png)
 
-
-
-## 🔮 Future Improvements
-
-- [ ] **Hyperparameter Tuning** (Optuna)
-- [ ] **CI/CD Pipeline** (GitHub Actions)
-- [ ] **Model Drift Detection**
-- [ ] **Batch Prediction Endpoint**
-- [ ] **Cloud Deployment** (AWS/GCP/Azure)
-- [ ] **Authentication & Authorization**
-- [ ] **Monitoring & Alerting** (Prometheus/Grafana)
-
 ---
-
 
 ## 🙏 Acknowledgments
 
