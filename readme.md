@@ -104,7 +104,7 @@ PostgreSQL  MinIO   MLflow     Model
 
 ```bash
 git clone https://github.com/nafisrahman006/wine-mlops.git
-cd wine-quality-mlops
+cd wine-mlops
 ```
 
 ### 2. Configure Environment
