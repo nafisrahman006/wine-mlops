@@ -24,7 +24,7 @@ An end-to-end MLOps project for wine quality prediction using **MLflow**, **MinI
 - [Model Registry](#-model-registry)
 - [API Usage](#-api-usage)
 - [Screenshots](#-screenshots)
-- [Future Improvements](#-future-improvements)
+
 
 ---
 
@@ -79,7 +79,7 @@ PostgreSQL  MinIO   MLflow     Model
 | 📊 **MLflow Tracking** | Parameters, metrics, artifacts logging |
 | 🗂️ **Model Registry** | Version control with aliases (production, staging) |
 | 🪣 **MinIO Storage** | S3-compatible artifact storage |
-| 🐘 **PostgreSQL** | Production-grade MLflow backend |
+| 🐘 **PostgreSQL** | MLflow backend |
 | 🚀 **FastAPI** | High-performance prediction API |
 | 🔒 **Secret Management** | Environment variables via `.env` |
 | 🐳 **Docker Compose** | One-command full stack deployment |
