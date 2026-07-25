@@ -8,6 +8,7 @@ An end-to-end MLOps project for wine quality prediction using **MLflow**, **MinI
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![MinIO](https://img.shields.io/badge/MinIO-S3_Compatable-red)
+![CI/CD](https://github.com/nafisrahman006/wine-mlops/actions/workflows/ci-cd.yaml/badge.svg)
 
 
 ---
@@ -90,6 +91,7 @@ PostgreSQL  MinIO   MLflow     Model
 | 🔄 **Registry Retry Logic** | API polls MLflow for 2.5 min waiting for the production alias |
 | 📝 **Structured Logging** | Dual file + stdout logging with timestamps |
 | ❤️ **Docker Healthcheck** | Built-in container health check via curl |
+| ⚙️ **CI/CD Pipeline** | GitHub Actions: lint → test → build → Trivy scan → push to Docker Hub |
 
 ---
 
@@ -104,7 +106,7 @@ PostgreSQL  MinIO   MLflow     Model
 
 ```bash
 git clone https://github.com/nafisrahman006/wine-mlops.git
-cd wine-mlops
+cd wine-quality-mlops
 ```
 
 ### 2. Configure Environment
@@ -416,6 +418,39 @@ curl -X POST http://localhost:8000/predict/batch \
   "time_ms": 2.341
 }
 ```
+
+---
+
+## 🧪 Testing
+
+Unit tests live in `tests/` and mock the MLflow client, so they run without a live MLflow/Postgres/MinIO stack.
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v --cov=. --cov-report=term-missing
+```
+
+Covers: health check, `/predict` on valid input, out-of-range and missing-field rejection (422s), `/predict/batch`, and `/metrics`.
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+Every push and pull request to `main` runs `.github/workflows/ci-cd.yaml`:
+
+1. **Lint** — `flake8` over the codebase
+2. **Test** — `pytest` with coverage, mocked MLflow dependencies
+3. **Build & scan** — builds the Docker image, scans it with **Trivy** for CRITICAL/HIGH CVEs (fails the build on unfixed critical issues, uploads results to the repo's Security tab)
+4. **Push** — on `main` only, logs in to Docker Hub and pushes `latest` + the commit SHA tag
+
+### Required repository secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `DOCKERHUB_USERNAME` | Docker Hub account used to push the image |
+| `DOCKERHUB_TOKEN` | Docker Hub access token (Account Settings → Security → New Access Token) |
+
+Set these under **Settings → Secrets and variables → Actions** in the GitHub repo.
 
 ---
 
