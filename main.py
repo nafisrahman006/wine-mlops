@@ -58,6 +58,8 @@ metrics_store = {
 }
 
 # 3. INPUT VALIDATION
+
+
 class WineInput(BaseModel):
     fixed_acidity: float = Field(..., ge=0, le=20)
     volatile_acidity: float = Field(..., ge=0, le=2)
@@ -72,12 +74,16 @@ class WineInput(BaseModel):
         return v
 
 # 4. BATCH PREDICTION SCHEMA
+
+
 class BatchWineInput(BaseModel):
     wines: List[WineInput]
+
 
 # LOAD MODEL FROM REGISTRY
 client = MlflowClient()
 MODEL_ALIAS = "production"
+
 
 def load_model_from_registry(max_retries: int = 30, delay: int = 5):
     for attempt in range(max_retries):
@@ -93,9 +99,9 @@ def load_model_from_registry(max_retries: int = 30, delay: int = 5):
 
         except Exception as e:
             if attempt == 0:
-                print("\n" + "="*60)
+                print("\n" + "=" * 60)
                 print("NO PRODUCTION MODEL FOUND IN REGISTRY")
-                print("="*60)
+                print("=" * 60)
                 print("\nTraining is running. After it finishes:")
                 print("1. Open MLflow UI: http://localhost:5001")
                 print("2. Go to 'wine-quality-prediction' experiment")
@@ -103,12 +109,14 @@ def load_model_from_registry(max_retries: int = 30, delay: int = 5):
                 print("4. Name: wine-model")
                 print("5. Go to Model Registry -> wine-model -> Add alias -> 'production'")
                 print("6. Then this API will auto-load it")
-                print("="*60 + "\n")
+                print("=" * 60 + "\n")
 
             logger.warning(f"Waiting for model in registry... ({attempt + 1}/{max_retries}): {e}")
             time.sleep(delay)
 
-    raise RuntimeError(f"Failed to load model 'wine-model@{MODEL_ALIAS}' from MLflow. Please register a model manually.")
+    raise RuntimeError(
+        f"Failed to load model 'wine-model@{MODEL_ALIAS}' from MLflow. Please register a model manually.")
+
 
 model = load_model_from_registry()
 
@@ -123,6 +131,7 @@ TRAINING_STATS = {
 }
 
 DRIFT_THRESHOLD = 2.0
+
 
 def detect_drift(recent_inputs: deque) -> dict:
     if len(recent_inputs) < 10:
@@ -152,7 +161,9 @@ def detect_drift(recent_inputs: deque) -> dict:
 
     return result
 
+
 app = FastAPI(title="Wine Quality Prediction API", version="2.0.0")
+
 
 @app.get("/")
 def health_check():
@@ -168,6 +179,7 @@ def health_check():
             "drift_detection"
         ]
     }
+
 
 @app.get("/metrics")
 def get_metrics():
@@ -186,6 +198,7 @@ def get_metrics():
         "avg_prediction_time_ms": avg_time,
         "drift_status": detect_drift(metrics_store["recent_inputs"])
     }
+
 
 @app.post("/predict")
 def predict(data: WineInput):
@@ -234,6 +247,7 @@ def predict(data: WineInput):
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
 
 @app.post("/predict/batch")
 def predict_batch(data: BatchWineInput):

@@ -7,7 +7,6 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import joblib
 import mlflow
 import mlflow.sklearn
 
@@ -57,16 +56,16 @@ def train(csv_path: str = "data/winequality-red.csv"):
         "SVM": SVC(random_state=42, probability=True)
     }
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("TRAINING ALL MODELS - NO AUTO-REGISTRATION")
-    print("="*50)
+    print("=" * 50)
     print("\nAfter training, go to MLflow UI and:")
     print("1. Click 'wine-quality-prediction' experiment")
     print("2. Compare runs, pick the best model")
     print("3. Click the best run -> Artifacts -> Register Model")
     print("4. Name: wine-model")
     print("5. Go to Model Registry -> wine-model -> Add alias -> 'production'")
-    print("="*50 + "\n")
+    print("=" * 50 + "\n")
 
     for name, model in models.items():
         with mlflow.start_run(run_name=name):
@@ -104,13 +103,13 @@ def train(csv_path: str = "data/winequality-red.csv"):
             # Log model artifact
             try:
                 mlflow.sklearn.log_model(model, artifact_path="model")
-                print(f"  Model artifact logged to MLflow")
+                print("  Model artifact logged to MLflow")
             except Exception as e:
                 print(f"  Failed to log model: {e}")
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("ALL MODELS TRAINED")
-    print("="*50)
+    print("=" * 50)
     print("\nNext steps:")
     print("1. Open MLflow UI: http://localhost:5001")
     print("2. Go to 'wine-quality-prediction' experiment")
@@ -118,7 +117,7 @@ def train(csv_path: str = "data/winequality-red.csv"):
     print("4. Click best run -> Artifacts -> Register Model")
     print("5. Name it 'wine-model', then add alias 'production'")
     print("6. Restart API: docker-compose restart api")
-    print("="*50)
+    print("=" * 50)
 
 
 if __name__ == "__main__":
