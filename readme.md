@@ -449,7 +449,8 @@ Every push and pull request to `main` runs `.github/workflows/ci-cd.yaml`:
 ### Coverage Breakdown
 ![Codecov Sunburst](https://codecov.io/gh/nafisrahman006/wine-mlops/graphs/sunburst.svg?token=KAJGPZU79I)
 
-Kaj kivabe kore:
+*Green = well-tested, Orange = partial coverage, Red = untested. 
+Inner circle = overall coverage, outer rings = individual files.*
 
 badge.svg — simple text badge, "87%" type
 ### Required repository secrets
