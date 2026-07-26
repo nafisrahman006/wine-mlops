@@ -18,12 +18,16 @@
 
 # CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-
 FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends gcc curl libpq-dev \
+# Fix HIGH/MEDIUM CVEs in bundled pip/setuptools/wheel (CVE-2026-23949, CVE-2026-24049, etc.)
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Upgrade OS packages to pick up Debian security patches, then install build deps
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends gcc curl libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
