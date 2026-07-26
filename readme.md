@@ -446,6 +446,12 @@ Every push and pull request to `main` runs `.github/workflows/ci-cd.yaml`:
 3. **Build & scan** — builds the Docker image, scans it with **Trivy** for CRITICAL/HIGH CVEs (fails the build on unfixed critical issues, uploads results to the repo's Security tab)
 4. **Push** — on `main` only, logs in to Docker Hub and pushes `latest` + the commit SHA tag
 
+### Coverage Breakdown
+![Codecov Sunburst](https://codecov.io/gh/nafisrahman006/wine-mlops/graphs/sunburst.svg?token=KAJGPZU79I)
+
+Kaj kivabe kore:
+
+badge.svg — simple text badge, "87%" type
 ### Required repository secrets
 
 | Secret | Purpose |
