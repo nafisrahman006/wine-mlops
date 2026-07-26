@@ -9,9 +9,11 @@ An end-to-end MLOps project for wine quality prediction using **MLflow**, **MinI
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![MinIO](https://img.shields.io/badge/MinIO-S3_Compatable-red)
 ![CI/CD](https://github.com/nafisrahman006/wine-mlops/actions/workflows/ci-cd.yaml/badge.svg)
+[![codecov](https://codecov.io/github/nafisrahman006/wine-mlops/graph/badge.svg?token=KAJGPZU79I)](https://codecov.io/github/nafisrahman006/wine-mlops)
 
 
 ---
+
 
 ## 📋 Table of Contents
 
@@ -149,8 +151,9 @@ This will:
 wine-quality-mlops/
 │
 ├── 📂 data/
-│   └── winequality-red.csv          # Dataset (Git-tracked)
-│
+│   └── winequality-red.csv           # Dataset (Git-tracked)
+├── 📂 docs/
+│   └── notes.md                      # fixes-notes
 ├── 📄 main.py                        # FastAPI application
 ├── 📄 train.py                       # Multi-model training script
 ├── 📄 requirements.txt               # Python dependencies
